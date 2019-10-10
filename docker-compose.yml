@@ -1,0 +1,60 @@
+version: "3.5"
+
+services:
+  nginx:
+    image: nginx:latest
+    restart: unless-stopped
+    container_name: hello-world-nginx
+    volumes:
+      # App root
+      - ./public:/var/www/public
+      # Config files
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      # Themes
+      - ./themes/hello-world:/var/www/public/wp-content/themes/hello-world
+    working_dir: /var/www/public
+    ports:
+      - "8000:80"
+    networks:
+      - hello-world
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hello-world/app:dev
+    container_name: hello-world-app
+    restart: unless-stopped
+    volumes:
+      # App root
+      - .:/var/www
+      # Config files
+      - ./php-fpm.conf:/usr/local/etc/php-fpm.conf
+      - ./www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./wp-config.php:/var/www/public/wp-config.php
+      # Themes
+      - ./themes/hello-world:/var/www/public/wp-content/themes/hello-world
+    networks:
+      hello-world:
+        aliases:
+          - app
+
+  mysql:
+    image: mysql:5.7.25
+    restart: unless-stopped
+    container_name: hello-world-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 33061:3306
+    networks:
+      hello-world:
+        aliases:
+          - ${DB_HOST}
+
+networks:
+  hello-world:
+    name: hello-world
