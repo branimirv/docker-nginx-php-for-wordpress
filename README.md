@@ -13,3 +13,6 @@ Docker for Wordpress with PHP, Nginx and MySQL
 
 ## Usage
 
+1. Run `npm install`
+2. For development mode run `npm run dev`
+3. For build mode run `npm run build`
